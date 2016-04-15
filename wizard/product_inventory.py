@@ -35,12 +35,15 @@ class stock_change_product_qty(osv.osv_memory):
             ctx = context.copy()
             ctx['location'] = data.location_id.id
             ctx['lot_id'] = data.lot_id.id
+            if data.product_id.id and data.lot_id.id:
+                filter = 'none'
+            elif data.product_id.id:
+                filter = 'product'
+            else:
+                filter = 'none'
             inventory_id = inventory_obj.create(cr, uid, {
-		#Its sort of redundant to put INV in the stock inventory name
-		#because we already know its an inventory!
-		#Additionally, lines end up like this in stock.move INV: INV: (stupid)
 		'name': data.adjustment_reference or data.product_id.name,
-#                'name': _('INV: %s') % data.tools.ustr(data.product_id.name),
+                'filter': filter,
                 'product_id': data.product_id.id,
                 'location_id': data.location_id.id,
                 'lot_id': data.lot_id.id}, context=context)
@@ -58,6 +61,3 @@ class stock_change_product_qty(osv.osv_memory):
             inventory_line_obj.create(cr , uid, line_data, context=context)
             inventory_obj.action_done(cr, uid, [inventory_id], context=context)
         return {}
-
-
-
